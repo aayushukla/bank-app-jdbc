@@ -17,5 +17,7 @@ public interface BankAppDao {
 	public List<BankAccount> findAllBankAccounts();
 	
 	public BankAccount findBankAccount(int accountId);
+	
+	public boolean updateBankAccountDetails(int accountId, String updatedAccountName, String updatedAccountType);
 
 }

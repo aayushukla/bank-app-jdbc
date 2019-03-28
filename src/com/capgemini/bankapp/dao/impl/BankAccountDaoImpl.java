@@ -16,13 +16,12 @@ public class BankAccountDaoImpl implements BankAppDao {
 	@Override
 	public double getBalance(long accountId) {
 		String query = "SELECT account_balance FROM bankaccounts WHERE account_id=" + accountId;
-		double balance = 0;
-
-		try (Connection connection = DbUtil.getConnection();
-				PreparedStatement statement = connection.prepareStatement(query);
+		double balance = -1;
+		Connection connection = DbUtil.getConnection();
+		try (PreparedStatement statement = connection.prepareStatement(query);
 				ResultSet result = statement.executeQuery()) {
-			while(result.next()) {
-			balance = result.getDouble(1);
+			while (result.next()) {
+				balance = result.getDouble(1);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -34,14 +33,14 @@ public class BankAccountDaoImpl implements BankAppDao {
 	public void updateBalance(long accountId, double newBalance) {
 
 		String query = "UPDATE bankaccounts SET account_balance=? WHERE account_id=?";
-
-		try (Connection connection = DbUtil.getConnection();
-				PreparedStatement statement = connection.prepareStatement(query)) {
+		Connection connection = DbUtil.getConnection();
+		try (PreparedStatement statement = connection.prepareStatement(query)) {
 			statement.setDouble(1, newBalance);
 			statement.setLong(2, accountId);
 
 			int result = statement.executeUpdate();
 			System.out.println("number of rows updates" + result);
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -52,8 +51,8 @@ public class BankAccountDaoImpl implements BankAppDao {
 	public boolean deleteBankAccount(long accountId) {
 		String query = "DELETE FROM bankaccounts WHERE account_id=" + accountId;
 		int result;
-		try (Connection connection = DbUtil.getConnection();
-				PreparedStatement statement = connection.prepareStatement(query)) {
+		Connection connection = DbUtil.getConnection();
+		try (PreparedStatement statement = connection.prepareStatement(query)) {
 			result = statement.executeUpdate();
 			if (result == 1)
 				return true;
@@ -66,8 +65,8 @@ public class BankAccountDaoImpl implements BankAppDao {
 	@Override
 	public boolean addNewBankAccount(BankAccount account) {
 		String query = "INSERT INTO bankaccounts (customer_name,account_type,account_balance) VALUES (?,?,?)";
-		try (Connection connection = DbUtil.getConnection();
-				PreparedStatement statement = connection.prepareStatement(query)) {
+		Connection connection = DbUtil.getConnection();
+		try (PreparedStatement statement = connection.prepareStatement(query)) {
 			statement.setString(1, account.getAccountHolderName());
 			statement.setString(2, account.getAccountType());
 			statement.setDouble(3, account.getAccounBalance());
@@ -85,9 +84,8 @@ public class BankAccountDaoImpl implements BankAppDao {
 	public List<BankAccount> findAllBankAccounts() {
 		String query = "SELECT * FROM bankaccounts";
 		List<BankAccount> accounts = new ArrayList<>();
-
-		try (Connection connection = DbUtil.getConnection();
-				PreparedStatement statement = connection.prepareStatement(query);
+		Connection connection = DbUtil.getConnection();
+		try (PreparedStatement statement = connection.prepareStatement(query);
 				ResultSet result = statement.executeQuery()) {
 
 			while (result.next()) {
@@ -97,8 +95,8 @@ public class BankAccountDaoImpl implements BankAppDao {
 				double accountBalance = result.getDouble(4);
 				BankAccount account = new BankAccount(accountId, accountHolderName, accountType, accountBalance);
 				accounts.add(account);
-				System.out.println(accounts);
 			}
+			System.out.println(accounts);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -109,20 +107,36 @@ public class BankAccountDaoImpl implements BankAppDao {
 	public BankAccount findBankAccount(int accountId) {
 		String query = "SELECT * FROM bankaccounts WHERE account_id=" + accountId;
 		BankAccount account = null;
-		
-		try (Connection connection = DbUtil.getConnection();
-				PreparedStatement statement = connection.prepareStatement(query)) {
+		Connection connection = DbUtil.getConnection();
+		try (PreparedStatement statement = connection.prepareStatement(query)) {
 			ResultSet result = statement.executeQuery();
-			while(result.next()) {
-				account = new BankAccount(result.getInt(1), result.getString(2), result.getString(3) ,result.getDouble(4));
-				//System.out.println(account);
+			while (result.next()) {
+				account = new BankAccount(result.getInt(1), result.getString(2), result.getString(3),
+						result.getDouble(4));
+				// System.out.println(account);
 			}
-			
-			
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return account;
 	}
 
+	@Override
+	public boolean updateBankAccountDetails(int accountId, String updatedName, String updatedType) {
+		String query = "UPDATE bankaccounts SET customer_name=?,account_type=? WHERE account_id=" + accountId;
+		int result = 0;
+		Connection connection = DbUtil.getConnection();
+		try (PreparedStatement statement = connection.prepareStatement(query)) {
+			statement.setString(1, updatedName);
+			statement.setString(2, updatedType);
+			result = statement.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		if (result == 1)
+			return true;
+		else
+			return false;
+	}
 }
